@@ -1,0 +1,45 @@
+resources:
+- name: repo
+  type: git
+  source:
+    uri: https://github.com/tomtomtomtom44/test-node.git
+    branch: master
+    username: tomtomtomtom44
+    password: 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
+
+- name: node-image
+  type: registry-image
+  source:
+    repository: node
+    tag: fermium
+jobs:
+- name: test
+  plan:
+  - get: node-image
+  - get: repo
+    trigger: true
+  - task: install
+    image: node-image
+    config:
+      inputs:
+      - name: repo
+      outputs:
+      - name: dependencies
+        path: repo/node_modules
+      platform: linux
+      run:
+        path: npm
+        args: ["install"]
+        dir: repo
+  - task: test
+    image: node-image
+    config:
+      inputs:
+      - name: repo
+      - name: dependencies
+        path: repo/node_modules
+      platform: linux
+      run:
+        path: npm
+        args: ["run", "test"]
+        dir: repo
