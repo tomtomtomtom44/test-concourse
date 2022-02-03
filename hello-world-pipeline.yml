@@ -12,6 +12,15 @@ resources:
   source:
     repository: node
     tag: fermium
+
+- name: test_image
+  type: registry-image
+  source:
+    repository: ((image-repo-name))/test-node
+    username: ((registry-username))
+    password: ((registry-password))
+    tag: 1.0.0-SNAPSHOT
+
 jobs:
 - name: test
   plan:
@@ -43,3 +52,25 @@ jobs:
         path: npm
         args: ["run", "test"]
         dir: repo
+  # - load_var: version
+  #   file: repo/package.json
+  - task: build-and-push
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          repository: vito/oci-build-task
+      inputs:
+      - name: repo
+      outputs:
+      - name: image
+      params:
+        CONTEXT: repo
+      run:
+        path: build
+  - put: test_image
+    params:
+      image: image/image.tar
+
