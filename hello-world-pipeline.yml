@@ -11,7 +11,7 @@ resources:
   type: registry-image
   source:
     repository: node
-    tag: fermium
+    tag: 14-alpine
 
 - name: test_image
   type: registry-image
@@ -19,7 +19,7 @@ resources:
     repository: ((image-repo-name))/test-node
     username: ((registry-username))
     password: ((registry-password))
-    tag: 1.0.0-SNAPSHOT
+    
 
 jobs:
 - name: test
@@ -52,8 +52,8 @@ jobs:
         path: npm
         args: ["run", "test"]
         dir: repo
-  # - load_var: version
-  #   file: repo/package.json
+  - load_var: version
+    file: repo/package.json
   - task: build-and-push
     privileged: true
     config:
@@ -73,4 +73,4 @@ jobs:
   - put: test_image
     params:
       image: image/image.tar
-
+      version: "((.:version.version))-SNAPSHOT"
